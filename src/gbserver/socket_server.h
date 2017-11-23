@@ -224,7 +224,33 @@ void worker(local::stream_protocol::socket *socket, graph<std::string, std::stri
       return_string = oss.str();
 
 // ENTITIES THAT EXACT MATCH THE INPUT NODE
-    } else if (commands.at(0) == "esiblings") {
+    } else if (commands.at(0) == "node_label") {
+      std::ostringstream oss;
+      oss << g.get_node_type((unsigned int) stoi(commands.at(1)));
+      oss << "\n";
+      return_string = oss.str();
+    } else if (commands.at(0) =="edge_label") {
+      std::ostringstream oss;
+      oss << g.get_edge_type((unsigned int) stoi(commands.at(1)));
+      oss << "\n";
+      return_string = oss.str();
+        
+    // ENTITIES THAT EXACT MATCH THE INPUT NODE
+    } else if (commands.at(0) == "same_ontology") {
+        std::ostringstream oss;
+        std::set<unsigned int> same_onto = g.get_same_ontology((unsigned int) stoi(commands.at(1)));
+        if (commands.size() >=3 && is_true(commands.at(2))) {
+         for (auto it = same_onto.cbegin(); it != same_onto.cend(); ++it) {
+            oss << g.get_node_type(*it) << ",";
+         }
+        } else {
+               for (auto it = same_onto.cbegin(); it != same_onto.cend(); ++it) {
+           oss << *it << ",";
+         }
+        }
+        oss << "\n";
+        return_string = oss.str();
+     } else if (commands.at(0) == "esiblings") {
       std::ostringstream oss;
       auto siblings = g.get_ontology_siblings((unsigned int) stoi(commands.at(1)), 0.0);
       for (auto it = siblings.cbegin(); it != siblings.cend(); ++it) {

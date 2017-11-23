@@ -714,6 +714,11 @@ public:
 
   }
 
+  std::set<unsigned int> get_same_ontology(unsigned int id){
+  return edges_ptr->get_same_ontology(id);
+  }
+
+
   unsigned int get_nontology()
   {
     return edges_ptr->get_nontology();
