@@ -9,7 +9,7 @@ library(LiblineaR)
 library(parallel)
 library(RWeka)
 
-source("./gbserverAPI.R")
+source("./Rscript/gbserverAPI.R")
 
 ## All input dfs must have at least three columns, first two columns are ids and the third column is class label.
 
