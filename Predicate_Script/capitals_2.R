@@ -15,7 +15,7 @@ list.of.packages <- c("bear", "FSelector", "ggplot2")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
 library(FSelector)
-library(ggplot2)
+#library(ggplot2)
 # ---- INPUT and CONFIGURATIONS ----
 
 EDGE_TYPE_FILE = "./data/infobox.edgetypes" # Example : "../data/lobbyist.edgetypes"
@@ -48,7 +48,8 @@ if (ncol(dat_country_capital.true) < 3)
 # ---- Construct false labeled data -----
 set.seed(233)
 
-dat_country_state_capital.true <- rbind(dat_country_capital.true[163:173,], dat_state_capital.true)
+colnames(dat_state_capital.true) <- c("src","dst","label")
+dat_country_state_capital.true <- rbind(dat_country_capital.true[163:172,], dat_state_capital.true[1:40,])
 # TODO: reformat this so it is universal and file independent
 dat_country_state_capital.false <- rbind.fill(apply(dat_country_state_capital.true, 1, function(x){
   candidates <- unique(dat_country_state_capital.true[which(dat_country_state_capital.true[,1] != x[1]), 2])
@@ -63,9 +64,7 @@ dat_country_state_capital.false <- rbind.fill(apply(dat_country_state_capital.tr
                     label=F))
 }))
 
-set.seed(233)
 
-colnames(dat_country_state_capital.true) <- c("src","dst","label")
 dat_country_state_capital <- rbind(dat_country_state_capital.true, dat_country_state_capital.false)
 
 
