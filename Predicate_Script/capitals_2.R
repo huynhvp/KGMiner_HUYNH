@@ -49,6 +49,7 @@ if (ncol(dat_country_capital.true) < 3)
 set.seed(233)
 
 colnames(dat_state_capital.true) <- c("src","dst","label")
+colnames(dat_country_capital.true) <- c("src","dst","label")
 dat_country_state_capital.true <- rbind(dat_country_capital.true[163:172,], dat_state_capital.true[1:40,])
 # TODO: reformat this so it is universal and file independent
 dat_country_state_capital.false <- rbind.fill(apply(dat_country_state_capital.true, 1, function(x){
