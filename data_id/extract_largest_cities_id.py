@@ -30,7 +30,7 @@ while file1_name != "":
             if node_info[1].split('\n')[0] == city_name:
                 file2_found = True
                 str_to_write = str_to_write + node_info[0]
-        
+            node = nodes.readline()
     print "writing " + str_to_write + " meanings: " + state_name + "," + city_name
     ids.write(str_to_write + '\n')
     file1_name = file1_names.readline()
