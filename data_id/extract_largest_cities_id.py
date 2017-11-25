@@ -23,7 +23,7 @@ while file1_name != "":
             str_to_write = node_info[0] + str_to_write
         node = nodes.readline()
     if (not file2_found):
-        nodes = open('/home/phi/KGMiner/data/infobox.nodes', 'r')
+        nodes = open('./data/infobox.nodes', 'r')
         node = nodes.readline()
         while node != "" and (not file2_found):
             node_info = node.split('\t')
