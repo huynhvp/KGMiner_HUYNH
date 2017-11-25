@@ -15,7 +15,7 @@ list.of.packages <- c("bear", "FSelector", "ggplot2")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
 library(FSelector)
-library(ggplot2)
+#library(ggplot2)
 # ---- INPUT and CONFIGURATIONS ----
 
 EDGE_TYPE_FILE = "./data/infobox.edgetypes" # Example : "../data/lobbyist.edgetypes"
