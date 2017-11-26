@@ -1,5 +1,5 @@
 #### Test 1: check true, false capital_state of USA and capital_country. 
-####  Data include 40 true fact USAcapital - USAstate along with 10 true fact capital - country. From each true fact, we random create 5 false fact by combining its USAcapital 
+####  Data include 25 true fact USAcapital - USAstate along with 25 true fact capital - country. From each true fact, we random create 5 false fact by combining its USAcapital 
 #### with 5 different USA states or country.
 
 
@@ -51,7 +51,7 @@ set.seed(233)
 
 colnames(dat_state_capital.true) <- c("src","dst","label")
 colnames(dat_country_capital.true) <- c("src","dst","label")
-dat_country_state_capital.true <- rbind(dat_country_capital.true[63:72,], dat_state_capital.true[1:40,])
+dat_country_state_capital.true <- rbind(dat_country_capital.true[63:87,], dat_state_capital.true[1:25,])
 # TODO: reformat this so it is universal and file independent
 dat_country_state_capital.false <- rbind.fill(apply(dat_country_state_capital.true, 1, function(x){
   candidates <- unique(dat_country_state_capital.true[which(dat_country_state_capital.true[,1] != x[1]), 2])
@@ -91,7 +91,7 @@ tmp.paths <- rbind.fill(parApply(cl, dat_country_state_capital, 1, function(x) {
 }))
 tmp.paths[is.na(tmp.paths)] <- 0
 
-write.csv(tmp.paths, "./Predicate_paths/capitals_2.csv")
+write.csv(tmp.paths, "./Predicate_paths/capitals_4.csv")
 
 res_capital_state <- list()
 res_capital_state[["raw"]] <- tmp.paths
