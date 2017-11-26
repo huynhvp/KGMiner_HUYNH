@@ -63,9 +63,13 @@ dat_state_capital <- rbind(dat_state_capital.true, dat_state_capital.false)
 ```
 
 ```{r}
-tmp.paths <- read.csv("./Predicate_paths/capitals_3.csv")
+tmp.paths <- read.csv("./Predicate_paths/capitals_3.csv", header = T)
 tmp.paths$X <- NULL
+dkm <- read.csv("./Predicate_paths/capitals_3.csv", header = F)
+dkm$V1 <- NULL
+colnames(tmp.paths) <- as.character(unlist(dkm[1,]))
 tmp.paths
+
 ```
 
 ```{r}
@@ -85,7 +89,9 @@ weights_capital_state <- weights_capital_state[order(weights_capital_state[,1], 
 features_captial_state <- data.frame(importance=weights_capital_state$attr_importance, path=row.names(weights_capital_state))
 
 features_captial_state <- features_captial_state[order(-features_captial_state$importance),]
-#features_captial_state$path <- idpath2title(features_captial_state$path, mapfile)
+#features_captial_state
+#as.character(features_captial_state$path)
+features_captial_state$path <- idpath2title(features_captial_state$path, mapfile)
 head(weights_capital_state)
 head(features_captial_state)
 ```
@@ -115,6 +121,11 @@ options(repr.plot.width=6, repr.plot.height=3)
 ggplot(data=res_AOROC, aes(x=nfeature, y=AOROC, group=1)) +
   geom_line(color="red")+
   geom_point()
+```
+
+```{r}
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, 6))])
+wekares
 ```
 
 
