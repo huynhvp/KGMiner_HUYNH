@@ -79,10 +79,12 @@ tmp.paths <- rbind.fill(parApply(cl, dat_state_capital, 1, function(x) {
 }))
 tmp.paths[is.na(tmp.paths)] <- 0
 
+write.csv(tmp.paths, "./Predicate_paths/capitals_1.csv")
+
 res_capital_state <- list()
 res_capital_state[["raw"]] <- tmp.paths
 res_capital_state[["model"]] <- Logistic(label~.,res_capital_state[["raw"]])
 res_capital_state[["eval"]] <- evaluate_Weka_classifier(res_capital_state[["model"]], numFolds = 10, complexity = T, class = T, seed = 233)
 res_capital_state[["eval"]]
 
-write.csv(tmp.paths, "./Predicate_paths/capitals_1.csv")
+
