@@ -68,8 +68,7 @@ tmp.paths$X <- NULL
 dkm <- read.csv("./Predicate_paths/capitals_3.csv", header = F)
 dkm$V1 <- NULL
 colnames(tmp.paths) <- as.character(unlist(dkm[1,]))
-tmp.paths
-
+ncol(tmp.paths)
 ```
 
 ```{r}
@@ -78,6 +77,10 @@ res_capital_state[["raw"]] <- tmp.paths
 res_capital_state[["model"]] <- Logistic(label~.,res_capital_state[["raw"]])
 res_capital_state[["eval"]] <- evaluate_Weka_classifier(res_capital_state[["model"]], numFolds = 10, complexity = T, class = T, seed = 233)
 res_capital_state[["eval"]]
+```
+
+```{r}
+
 ```
 
 ```{r}
@@ -92,7 +95,9 @@ features_captial_state <- features_captial_state[order(-features_captial_state$i
 #features_captial_state
 #as.character(features_captial_state$path)
 features_captial_state$path <- idpath2title(features_captial_state$path, mapfile)
+weights_capital_state
 head(weights_capital_state)
+features_captial_state
 head(features_captial_state)
 ```
 
@@ -113,6 +118,10 @@ return(data.frame(AOROC=fm_val(wekares),nfeature=x))
 }))
 stopCluster(cl)
 ```
+```{r}
+wekares<-eval.df(tmp.paths[c("label", cutoff.k(weights_capital_state, 6))])
+wekares[["eval"]]
+```
 
 ```{r}
 install.packages("repr")
@@ -122,10 +131,174 @@ ggplot(data=res_AOROC, aes(x=nfeature, y=AOROC, group=1)) +
   geom_line(color="red")+
   geom_point()
 ```
-
 ```{r}
-wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, 6))])
-wekares
+# ---- AOROC of predicated sub paths ----
+fm_val <- function(resdf) {
+  return(as.numeric(str_split(str_split(resdf$eval$string,"\n")[[1]][24], " +")[[1]][9]))
+}
+full_predicated_path <- res_capital_state[["raw"]]
+cl <- makeCluster(1) 
+clusterExport(cl = cl, varlist=c("full_predicated_path", "weights_capital_state", "eval.df", "cutoff.k", "fm_val","str_split",
+                               "as.numeric"), envir = environment())
+res_AOROC <- rbind.fill(parLapply(cl, seq(1,13,by = 1), function(x){
+library(FSelector)
+library(RWeka)
+  
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, x))])
+return(data.frame(AOROC=fm_val(wekares),nfeature=x))
+}))
+stopCluster(cl)
 ```
 
+```{r}
+library(repr)
+options(repr.plot.width=6, repr.plot.height=3)
+ggplot(data=res_AOROC, aes(x=nfeature, y=AOROC, group=1)) +
+  geom_line(color="red")+
+  geom_point()
+```
+```{r}
+wekares<-eval.df(full_predicated_path[,c("label", row.names(weights_capital_state)[c(1,2,3,4,5,6,8,11,12,13,24)])])
+wekares[["eval"]]
+```
+
+
+```{r}
+wekares<-eval.df(full_predicated_path[,c("label", row.names(weights_capital_state)[c(1,2,3,4,5,6,8,11,12,13)])])
+wekares[["eval"]]
+```
+
+
+
+```{r}
+tmp.paths <- read.csv("./Predicate_paths/capitals_1.csv", header = T)
+tmp.paths$X <- NULL
+dkm <- read.csv("./Predicate_paths/capitals_1.csv", header = F)
+dkm$V1 <- NULL
+colnames(tmp.paths) <- as.character(unlist(dkm[1,]))
+ncol(tmp.paths)
+tmp.paths
+```
+
+
+```{r}
+res_capital_state <- list()
+res_capital_state[["raw"]] <- tmp.paths
+res_capital_state[["model"]] <- Logistic(label~.,res_capital_state[["raw"]])
+res_capital_state[["eval"]] <- evaluate_Weka_classifier(res_capital_state[["model"]], numFolds = 10, complexity = T, class = T, seed = 233)
+res_capital_state[["eval"]]
+```
+```{r}
+# ---- Feature selection validation ----
+weights_capital_state <- information.gain(label~., res_capital_state[["raw"]])
+weights_capital_state <- weights_capital_state[order(weights_capital_state[,1], decreasing = T),,drop=F]
+
+# ---- Top related relations ----
+features_captial_state <- data.frame(importance=weights_capital_state$attr_importance, path=row.names(weights_capital_state))
+
+features_captial_state <- features_captial_state[order(-features_captial_state$importance),]
+#features_captial_state
+#as.character(features_captial_state$path)
+features_captial_state$path <- idpath2title(features_captial_state$path, mapfile)
+weights_capital_state
+head(weights_capital_state)
+features_captial_state
+head(features_captial_state)
+```
+
+```{r}
+# ---- AOROC of predicated sub paths ----
+fm_val <- function(resdf) {
+  return(as.numeric(str_split(str_split(resdf$eval$string,"\n")[[1]][24], " +")[[1]][9]))
+}
+full_predicated_path <- res_capital_state[["raw"]]
+cl <- makeCluster(2) 
+clusterExport(cl = cl, varlist=c("full_predicated_path", "weights_capital_state", "eval.df", "cutoff.k", "fm_val","str_split",
+                               "as.numeric"), envir = environment())
+res_AOROC <- rbind.fill(parLapply(cl, seq(1,ncol(full_predicated_path)-1,by = 5), function(x){
+library(FSelector)
+library(RWeka)
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, x))])
+return(data.frame(AOROC=fm_val(wekares),nfeature=x))
+}))
+stopCluster(cl)
+```
+
+```{r}
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, x))])
+wekares[["eval"]]
+```
+
+```{r}
+library(repr)
+options(repr.plot.width=6, repr.plot.height=3)
+ggplot(data=res_AOROC, aes(x=nfeature, y=AOROC, group=1)) +
+  geom_line(color="red")+
+  geom_point()
+```
+```{r}
+full_predicated_path <- res_capital_state[["raw"]]
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, 20))])
+wekares[["eval"]]
+```
+
+```{r}
+tmp.paths <- read.csv("./Predicate_paths/capitals_4.csv", header = T)
+tmp.paths$X <- NULL
+dkm <- read.csv("./Predicate_paths/capitals_4.csv", header = F)
+dkm$V1 <- NULL
+colnames(tmp.paths) <- as.character(unlist(dkm[1,]))
+ncol(tmp.paths)
+```
+```{r}
+res_capital_state <- list()
+res_capital_state[["raw"]] <- tmp.paths
+res_capital_state[["model"]] <- Logistic(label~.,res_capital_state[["raw"]])
+res_capital_state[["eval"]] <- evaluate_Weka_classifier(res_capital_state[["model"]], numFolds = 10, complexity = T, class = T, seed = 233)
+res_capital_state[["eval"]]
+```
+```{r}
+# ---- Feature selection validation ----
+weights_capital_state <- information.gain(label~., res_capital_state[["raw"]])
+weights_capital_state <- weights_capital_state[order(weights_capital_state[,1], decreasing = T),,drop=F]
+
+# ---- Top related relations ----
+features_captial_state <- data.frame(importance=weights_capital_state$attr_importance, path=row.names(weights_capital_state))
+
+features_captial_state <- features_captial_state[order(-features_captial_state$importance),]
+#features_captial_state
+#as.character(features_captial_state$path)
+features_captial_state$path <- idpath2title(features_captial_state$path, mapfile)
+head(weights_capital_state)
+head(features_captial_state)
+```
+```{r}
+# ---- AOROC of predicated sub paths ----
+fm_val <- function(resdf) {
+  return(as.numeric(str_split(str_split(resdf$eval$string,"\n")[[1]][24], " +")[[1]][9]))
+}
+full_predicated_path <- res_capital_state[["raw"]]
+cl <- makeCluster(2) 
+clusterExport(cl = cl, varlist=c("full_predicated_path", "weights_capital_state", "eval.df", "cutoff.k", "fm_val","str_split",
+                               "as.numeric"), envir = environment())
+res_AOROC <- rbind.fill(parLapply(cl, seq(1,ncol(full_predicated_path)-1,by = 5), function(x){
+library(FSelector)
+library(RWeka)
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, x))])
+return(data.frame(AOROC=fm_val(wekares),nfeature=x))
+}))
+stopCluster(cl)
+```
+
+```{r}
+library(repr)
+options(repr.plot.width=6, repr.plot.height=3)
+ggplot(data=res_AOROC, aes(x=nfeature, y=AOROC, group=1)) +
+  geom_line(color="red")+
+  geom_point()
+```
+```{r}
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, 15))])
+wekares[["eval"]]
+```
 
