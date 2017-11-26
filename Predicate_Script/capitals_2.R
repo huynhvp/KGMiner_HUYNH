@@ -41,6 +41,7 @@ if (ncol(dat_state_capital.true) < 3)
 INPUT_FILE = "./data_id/country_captial.csv" 
 # ---- Load input data ----
 dat_country_capital.true <- read.csv(INPUT_FILE)
+dat_country_capital.true <- na.omit(dat_country_capital.true)
 
 if (ncol(dat_country_capital.true) < 3)
   dat_country_capital.true$label <- T
@@ -50,7 +51,7 @@ set.seed(233)
 
 colnames(dat_state_capital.true) <- c("src","dst","label")
 colnames(dat_country_capital.true) <- c("src","dst","label")
-dat_country_state_capital.true <- rbind(dat_country_capital.true[163:172,], dat_state_capital.true[1:40,])
+dat_country_state_capital.true <- rbind(dat_country_capital.true[63:72,], dat_state_capital.true[1:40,])
 # TODO: reformat this so it is universal and file independent
 dat_country_state_capital.false <- rbind.fill(apply(dat_country_state_capital.true, 1, function(x){
   candidates <- unique(dat_country_state_capital.true[which(dat_country_state_capital.true[,1] != x[1]), 2])
