@@ -1,19 +1,29 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
 ```{r}
 # ---- Cleanup everything before start ----
 options(warn=-1)
+options(repos="https://cran.rstudio.com" )
 rm(list = ls())
 gc()
-```
+list.of.packages <- c("FSelector", "ggplot2")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
+library(FSelector)
+library(ggplot2)
+library(RWeka)
+install.packages("repr")
+library(repr)
 
-```{r}
-### Find true capital-state pairs from all possible capital-state pairs
-
-# ---- GBSERVER API ----
+#---- GBSERVER API ----
 source("./Rscript/experimentAPI.R")
 # ---- INPUT and CONFIGURATIONS ----
 
-EDGE_TYPE_FILE = "./data/infobox.edgetypes" # Example : "../data/lobbyist.edgetypes"
-CLUSTER_SIZE = 1 # Number of workers in gbserver
+EDGE_TYPE_FILE = "./data/infobox.edgetypes" 
+CLUSTER_SIZE = 2 # Number of workers in gbserver
 FALSE_PER_TRUE = 5
 DISCARD_REL = 191
 ASSOCIATE_REL = c(404)
@@ -25,26 +35,26 @@ mapfile$V1 <- as.numeric(mapfile$V1)
 mapfile$V2 <- as.character(mapfile$V2)
 ```
 
+### Find true capital-state pairs from:
+(1) possible capital-state pairs
+We have 50 true US capital-state. We then create 200 false pairs by random matching of capitals to states.
+(2) possible capital-state and largestcity-state pairs
+We have 50 true US capital-state. We then create 216 false pairs by matching each state to its largest city.
+(3) possible capital-state and capital-country
+We have 25 true US capital-state and 25 true capital country. We then create 200 false pairs by random matching of capitals to states or countries.
+
+
+## Test case 1: 50 true US capital-state and 250 US false capital-state
+
 ```{r}
-list.of.packages <- c("FSelector", "ggplot2")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
-library(FSelector)
-library(ggplot2)
-```
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
 # ---- Load input data ----
-INPUT_FILE = "./data_id/state_capital.csv" # Example : "../facts/lobbyist/firm_payee.csv" col 1 and 2 are ids and 3 is label
+INPUT_FILE = "./data_id/state_capital.csv"  
 dat_state_capital.true <- read.csv(INPUT_FILE)
-
 if (ncol(dat_state_capital.true) < 3)
   dat_state_capital.true$label <- T
 
 # ---- Construct false labeled data -----
 set.seed(233)
-
-# TODO: reformat this so it is universal and file independent
 dat_state_capital.false <- rbind.fill(apply(dat_state_capital.true, 1, function(x){
   candidates <- unique(dat_state_capital.true[which(dat_state_capital.true[,1] != x[1]), 2])
   candidates <- unlist(lapply(candidates, function(y){
@@ -57,137 +67,29 @@ dat_state_capital.false <- rbind.fill(apply(dat_state_capital.true, 1, function(
                     dst=sample(candidates, FALSE_PER_TRUE),
                     label=F))
 }))
-
 colnames(dat_state_capital.true) <- c("src","dst","label")
 dat_state_capital <- rbind(dat_state_capital.true, dat_state_capital.false)
 ```
 
-```{r}
-tmp.paths <- read.csv("./Predicate_paths/capitals_3.csv", header = T)
-tmp.paths$X <- NULL
-dkm <- read.csv("./Predicate_paths/capitals_3.csv", header = F)
-dkm$V1 <- NULL
-colnames(tmp.paths) <- as.character(unlist(dkm[1,]))
-ncol(tmp.paths)
-```
-
-```{r}
-res_capital_state <- list()
-res_capital_state[["raw"]] <- tmp.paths
-res_capital_state[["model"]] <- Logistic(label~.,res_capital_state[["raw"]])
-res_capital_state[["eval"]] <- evaluate_Weka_classifier(res_capital_state[["model"]], numFolds = 10, complexity = T, class = T, seed = 233)
-res_capital_state[["eval"]]
-```
-
-```{r}
-
-```
-
-```{r}
-# ---- Feature selection validation ----
-weights_capital_state <- information.gain(label~., res_capital_state[["raw"]])
-weights_capital_state <- weights_capital_state[order(weights_capital_state[,1], decreasing = T),,drop=F]
-
-# ---- Top related relations ----
-features_captial_state <- data.frame(importance=weights_capital_state$attr_importance, path=row.names(weights_capital_state))
-
-features_captial_state <- features_captial_state[order(-features_captial_state$importance),]
-#features_captial_state
-#as.character(features_captial_state$path)
-features_captial_state$path <- idpath2title(features_captial_state$path, mapfile)
-weights_capital_state
-head(weights_capital_state)
-features_captial_state
-head(features_captial_state)
-```
-
-```{r}
-# ---- AOROC of predicated sub paths ----
-fm_val <- function(resdf) {
-  return(as.numeric(str_split(str_split(resdf$eval$string,"\n")[[1]][24], " +")[[1]][9]))
-}
-full_predicated_path <- res_capital_state[["raw"]]
-cl <- makeCluster(1) 
-clusterExport(cl = cl, varlist=c("full_predicated_path", "weights_capital_state", "eval.df", "cutoff.k", "fm_val","str_split",
-                               "as.numeric"), envir = environment())
-res_AOROC <- rbind.fill(parLapply(cl, seq(1,ncol(full_predicated_path)-1,by = 5), function(x){
-library(FSelector)
-library(RWeka)
-wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, x))])
-return(data.frame(AOROC=fm_val(wekares),nfeature=x))
-}))
-stopCluster(cl)
-```
-```{r}
-wekares<-eval.df(tmp.paths[c("label", cutoff.k(weights_capital_state, 6))])
-wekares[["eval"]]
-```
-
-```{r}
-install.packages("repr")
-library(repr)
-options(repr.plot.width=6, repr.plot.height=3)
-ggplot(data=res_AOROC, aes(x=nfeature, y=AOROC, group=1)) +
-  geom_line(color="red")+
-  geom_point()
-```
-```{r}
-# ---- AOROC of predicated sub paths ----
-fm_val <- function(resdf) {
-  return(as.numeric(str_split(str_split(resdf$eval$string,"\n")[[1]][24], " +")[[1]][9]))
-}
-full_predicated_path <- res_capital_state[["raw"]]
-cl <- makeCluster(1) 
-clusterExport(cl = cl, varlist=c("full_predicated_path", "weights_capital_state", "eval.df", "cutoff.k", "fm_val","str_split",
-                               "as.numeric"), envir = environment())
-res_AOROC <- rbind.fill(parLapply(cl, seq(1,13,by = 1), function(x){
-library(FSelector)
-library(RWeka)
-  
-wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, x))])
-return(data.frame(AOROC=fm_val(wekares),nfeature=x))
-}))
-stopCluster(cl)
-```
-
-```{r}
-library(repr)
-options(repr.plot.width=6, repr.plot.height=3)
-ggplot(data=res_AOROC, aes(x=nfeature, y=AOROC, group=1)) +
-  geom_line(color="red")+
-  geom_point()
-```
-```{r}
-wekares<-eval.df(full_predicated_path[,c("label", row.names(weights_capital_state)[c(1,2,3,4,5,6,8,11,12,13,24)])])
-wekares[["eval"]]
-```
-
-
-```{r}
-wekares<-eval.df(full_predicated_path[,c("label", row.names(weights_capital_state)[c(1,2,3,4,5,6,8,11,12,13)])])
-wekares[["eval"]]
-```
-
-
-
+# Test 1: Discriminative predicate paths 
 ```{r}
 tmp.paths <- read.csv("./Predicate_paths/capitals_1.csv", header = T)
 tmp.paths$X <- NULL
 dkm <- read.csv("./Predicate_paths/capitals_1.csv", header = F)
 dkm$V1 <- NULL
 colnames(tmp.paths) <- as.character(unlist(dkm[1,]))
-ncol(tmp.paths)
-tmp.paths
 ```
 
-
+# Test 1: 10 fold cross validation ( using all possible predicate paths) 
 ```{r}
-res_capital_state <- list()
+res_capital_state<- list()
 res_capital_state[["raw"]] <- tmp.paths
 res_capital_state[["model"]] <- Logistic(label~.,res_capital_state[["raw"]])
 res_capital_state[["eval"]] <- evaluate_Weka_classifier(res_capital_state[["model"]], numFolds = 10, complexity = T, class = T, seed = 233)
 res_capital_state[["eval"]]
 ```
+
+# Test 1: Feature selection validation (weighing predicate paths basing on their correlation with labels) 
 ```{r}
 # ---- Feature selection validation ----
 weights_capital_state <- information.gain(label~., res_capital_state[["raw"]])
@@ -197,8 +99,7 @@ weights_capital_state <- weights_capital_state[order(weights_capital_state[,1], 
 features_captial_state <- data.frame(importance=weights_capital_state$attr_importance, path=row.names(weights_capital_state))
 
 features_captial_state <- features_captial_state[order(-features_captial_state$importance),]
-#features_captial_state
-#as.character(features_captial_state$path)
+
 features_captial_state$path <- idpath2title(features_captial_state$path, mapfile)
 weights_capital_state
 head(weights_capital_state)
@@ -206,6 +107,8 @@ features_captial_state
 head(features_captial_state)
 ```
 
+# Test 1:Cross validation of impact of top discriminative path of classification performance
+# Calculate ROC area in term of number of retained top paths
 ```{r}
 # ---- AOROC of predicated sub paths ----
 fm_val <- function(resdf) {
@@ -213,8 +116,8 @@ fm_val <- function(resdf) {
 }
 full_predicated_path <- res_capital_state[["raw"]]
 cl <- makeCluster(2) 
-clusterExport(cl = cl, varlist=c("full_predicated_path", "weights_capital_state", "eval.df", "cutoff.k", "fm_val","str_split",
-                               "as.numeric"), envir = environment())
+clusterExport(cl = cl, varlist=c("full_predicated_path", "weights_capital_state", "eval.df", "cutoff.k", "fm_val","str_split","as.numeric"), envir = environment())
+
 res_AOROC <- rbind.fill(parLapply(cl, seq(1,ncol(full_predicated_path)-1,by = 5), function(x){
 library(FSelector)
 library(RWeka)
@@ -225,80 +128,256 @@ stopCluster(cl)
 ```
 
 ```{r}
-wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, x))])
-wekares[["eval"]]
-```
-
-```{r}
-library(repr)
-options(repr.plot.width=6, repr.plot.height=3)
 ggplot(data=res_AOROC, aes(x=nfeature, y=AOROC, group=1)) +
   geom_line(color="red")+
   geom_point()
 ```
+
+# Test 1: 10 fold cross validation ( only use top 10 predicate paths) 
+# Easily to classify False pair even using a few of discriminative paths, since in general, there is very few paths between 2 entities in false pairs.
+# Misclassify some true pairs. Some of top 10 paths are trivial. May need another more efficient way to retrieve top paths
 ```{r}
 full_predicated_path <- res_capital_state[["raw"]]
-wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, 20))])
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, 10))])
+res_capital_state[["raw"]]
+features_captial_state[c(1:10),]
 wekares[["eval"]]
 ```
 
+
+
+## Test case 2: 50 true US capital-state and 216 US largestcity-state pairs considered as false capital-state
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# ---- Load input data ----
+INPUT_FILE = "./data_id/state_capital.csv" 
+dat_state_capital.true <- read.csv(INPUT_FILE)
+if (ncol(dat_state_capital.true) < 3)
+  dat_state_capital.true$label <- T
+
+# ---- Construct false labeled data -----
+set.seed(233)
+INPUT_FILE = "./data_id/state_largest_cities_id.csv" 
+largest_cities <- read.csv(INPUT_FILE)
+
+# TODO: reformat this so it is universal and file independent
+dat_state_capital.false <- rbind.fill(apply(dat_state_capital.true, 1, function(x){
+  candidates <- unique(largest_cities[which(largest_cities[,1] == x[1] & largest_cities[,2] != x[2]), 2])
+
+  return(data.frame(src=x[1], 
+                    dst=candidates,
+                    label=F))
+}))
+
+colnames(dat_state_capital.true) <- c("src","dst","label")
+dat_state_capital_largestcity <- rbind(dat_state_capital.true, dat_state_capital.false)
+```
+
+# Test 2: Discriminative predicate paths for test 2
+```{r}
+tmp.paths <- read.csv("./Predicate_paths/capitals_3.csv")
+tmp.paths$X <- NULL
+dkm <- read.csv("./Predicate_paths/capitals_3.csv", header = F)
+dkm$V1 <- NULL
+colnames(tmp.paths) <- as.character(unlist(dkm[1,]))
+```
+
+# Test 2: 10 fold cross validation ( using all possible predicate paths)
+# Misclassify both some true & false pairs. Since capital-state and largest-city share many same paths (ex. location, birthplace..) -> take into account all possible paths may lead to misclassification. 
+```{r}
+res_capital_state_largestcity <- list()
+res_capital_state_largestcity[["raw"]] <- tmp.paths
+res_capital_state_largestcity[["model"]] <- Logistic(label~.,res_capital_state_largestcity[["raw"]])
+res_capital_state_largestcity[["eval"]] <- evaluate_Weka_classifier(res_capital_state_largestcity[["model"]], numFolds = 10, complexity = T, class = T, seed = 233)
+res_capital_state_largestcity[["eval"]]
+```
+
+# Test 2: Feature selection validation (weighing predicate paths basing on their correlation with labels)
+```{r}
+# ---- Feature selection validation ----
+weights_capital_state_largestcity <- information.gain(label~., res_capital_state_largestcity[["raw"]])
+weights_capital_state_largestcity <- weights_capital_state_largestcity[order(weights_capital_state_largestcity[,1], decreasing = T),,drop=F]
+
+# ---- Top related relations ----
+features_captial_state_largestcity <- data.frame(importance=weights_capital_state_largestcity$attr_importance, path=row.names(weights_capital_state_largestcity))
+
+features_captial_state_largestcity <- features_captial_state_largestcity[order(-features_captial_state_largestcity$importance),]
+
+features_captial_state_largestcity$path <- idpath2title(features_captial_state_largestcity$path, mapfile)
+weights_capital_state_largestcity
+head(weights_capital_state_largestcity)
+features_captial_state_largestcity
+head(features_captial_state_largestcity)
+```
+
+# Test 2: Cross validation of impact of top discriminative path of classification performance
+# Calculate ROC area in term of number of retained top paths
+```{r}
+# ---- AOROC of predicated sub paths ----
+fm_val <- function(resdf) {
+  return(as.numeric(str_split(str_split(resdf$eval$string,"\n")[[1]][24], " +")[[1]][9]))
+}
+full_predicated_path <- res_capital_state_largestcity[["raw"]]
+cl <- makeCluster(2) 
+clusterExport(cl = cl, varlist=c("full_predicated_path", "weights_capital_state_largestcity", "eval.df", "cutoff.k", "fm_val","str_split","as.numeric"), envir = environment())
+
+res_AOROC_largestcity <- rbind.fill(parLapply(cl, seq(1,ncol(full_predicated_path)-1,by = 5), function(x){
+library(FSelector)
+library(RWeka)
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state_largestcity, x))])
+return(data.frame(AOROC=fm_val(wekares),nfeature=x))
+}))
+stopCluster(cl)
+```
+
+# Some first paths may have more useful information.
+```{r}
+ggplot(data=res_AOROC_largestcity, aes(x=nfeature, y=AOROC, group=1)) +
+  geom_line(color="red")+
+  geom_point()
+```
+
+# Test 2: 10 fold cross validation ( only use top 6 predicate paths) 
+# Clear improvement in classification of false pairs -> show that these paths are really discriminative. 
+# But using only these paths seems not enough for classification of true pairs. May need more paths.
+```{r}
+full_predicated_path <- res_capital_state_largestcity[["raw"]]
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state_largestcity, 6))])
+features_captial_state_largestcity[c(1:6),]
+wekares[["eval"]]
+```
+
+# Test 2: 10 fold cross validation ( only use top 21 predicate paths) 
+# Good improvement in classification of true pairs without bad impact on false pairs when increasing number of paths
+# -> show that we can find more discriminative paths
+```{r}
+full_predicated_path <- res_capital_state_largestcity[["raw"]]
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state_largestcity, 21))])
+features_captial_state_largestcity[c(1:21),]
+wekares[["eval"]]
+```
+
+# Test 2: 10 fold cross validation ( only use 11 selective predicate paths) 
+# However, in first 20 paths (for ex.), there're still some trivial paths (ex. location, birthplace, deathplace..), we try to # remove them and add other non-trivial path (ex. assembly)
+```{r}
+full_predicated_path <- res_capital_state_largestcity[["raw"]]
+wekares<-eval.df(full_predicated_path[,c("label", row.names(weights_capital_state_largestcity)[c(1,2,3,4,5,6,8,11,12,13,24)])])
+features_captial_state_largestcity[c(1,2,3,4,5,6,8,11,12,13,24),]
+wekares[["eval"]]
+```
+
+
+# Test 2: 10 fold cross validation ( only use top 11 predicate paths) 
+# compare with above result in case of using 11 first paths.
+```{r}
+full_predicated_path <- res_capital_state_largestcity[["raw"]]
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state_largestcity, 11))])
+features_captial_state_largestcity[c(1:11),]
+wekares[["eval"]]
+```
+
+
+## Test case 3: 25 true US capital-state + 25 true capital-country and 250 US false capital-state + capital-country
+
+```{r}
+# ---- Load input data ----
+INPUT_FILE = "./data_id/state_capital.csv"  
+dat_state_capital.true <- read.csv(INPUT_FILE)
+if (ncol(dat_state_capital.true) < 3)
+  dat_state_capital.true$label <- T
+
+INPUT_FILE = "./data_id/country_captial.csv"  
+dat_country_capital.true <- read.csv(INPUT_FILE)
+if (ncol(dat_country_capital.true) < 3)
+  dat_country_capital.true$label <- T
+dat_country_capital.true <- na.omit(dat_country_capital.true)
+
+colnames(dat_state_capital.true) <- c("src","dst","label")
+colnames(dat_country_capital.true) <- c("src","dst","label")
+dat_state_capital_country.true <- rbind(dat_state_capital.true[c(26:50),], dat_country_capital.true[c(1:25),])
+
+# ---- Construct false labeled data -----
+set.seed(233)
+dat_state_capital_country.false <- rbind.fill(apply(dat_state_capital_country.true, 1, function(x){
+  candidates <- unique(dat_state_capital_country.true[which(dat_state_capital_country.true[,1] != x[1]), 2])
+  candidates <- unlist(lapply(candidates, function(y){
+    if(length(which(dat_state_capital_country.true[,1] == x[1] & dat_state_capital_country.true[,2] == y) != 0)){
+      return(NULL)
+    }
+    return(y)
+  }))
+  return(data.frame(src=x[1], 
+                    dst=sample(candidates, FALSE_PER_TRUE),
+                    label=F))
+}))
+dat_state_capital_country <- rbind(dat_state_capital_country.true, dat_state_capital_country.false)
+```
+
+# Test 3: Discriminative predicate paths 
 ```{r}
 tmp.paths <- read.csv("./Predicate_paths/capitals_4.csv", header = T)
 tmp.paths$X <- NULL
 dkm <- read.csv("./Predicate_paths/capitals_4.csv", header = F)
 dkm$V1 <- NULL
 colnames(tmp.paths) <- as.character(unlist(dkm[1,]))
-ncol(tmp.paths)
 ```
+
+# Test 3: 10 fold cross validation ( using all possible predicate paths) 
 ```{r}
-res_capital_state <- list()
-res_capital_state[["raw"]] <- tmp.paths
-res_capital_state[["model"]] <- Logistic(label~.,res_capital_state[["raw"]])
-res_capital_state[["eval"]] <- evaluate_Weka_classifier(res_capital_state[["model"]], numFolds = 10, complexity = T, class = T, seed = 233)
-res_capital_state[["eval"]]
+res_capital_state_country<- list()
+res_capital_state_country[["raw"]] <- tmp.paths
+res_capital_state_country[["model"]] <- Logistic(label~.,res_capital_state_country[["raw"]])
+res_capital_state_country[["eval"]] <- evaluate_Weka_classifier(res_capital_state_country[["model"]], numFolds = 10, complexity = T, class = T, seed = 233)
+res_capital_state_country[["eval"]]
 ```
+
+# Test 3: Feature selection validation (weighing predicate paths basing on their correlation with labels) 
 ```{r}
 # ---- Feature selection validation ----
-weights_capital_state <- information.gain(label~., res_capital_state[["raw"]])
-weights_capital_state <- weights_capital_state[order(weights_capital_state[,1], decreasing = T),,drop=F]
+weights_capital_state_country <- information.gain(label~., res_capital_state_country[["raw"]])
+weights_capital_state_country <- weights_capital_state_country[order(weights_capital_state_country[,1], decreasing = T),,drop=F]
 
 # ---- Top related relations ----
-features_captial_state <- data.frame(importance=weights_capital_state$attr_importance, path=row.names(weights_capital_state))
+features_captial_state_country <- data.frame(importance=weights_capital_state_country$attr_importance, path=row.names(weights_capital_state_country))
 
-features_captial_state <- features_captial_state[order(-features_captial_state$importance),]
-#features_captial_state
-#as.character(features_captial_state$path)
-features_captial_state$path <- idpath2title(features_captial_state$path, mapfile)
-head(weights_capital_state)
-head(features_captial_state)
+features_captial_state_country <- features_captial_state_country[order(-features_captial_state_country$importance),]
+
+features_captial_state_country$path <- idpath2title(features_captial_state_country$path, mapfile)
+weights_capital_state_country
+head(weights_capital_state_country)
+features_captial_state_country
+head(features_captial_state_country)
 ```
+
+# Test 1:Cross validation of impact of top discriminative path of classification performance
+# Calculate ROC area in term of number of retained top paths
 ```{r}
 # ---- AOROC of predicated sub paths ----
 fm_val <- function(resdf) {
   return(as.numeric(str_split(str_split(resdf$eval$string,"\n")[[1]][24], " +")[[1]][9]))
 }
-full_predicated_path <- res_capital_state[["raw"]]
+full_predicated_path <- res_capital_state_country[["raw"]]
 cl <- makeCluster(2) 
-clusterExport(cl = cl, varlist=c("full_predicated_path", "weights_capital_state", "eval.df", "cutoff.k", "fm_val","str_split",
-                               "as.numeric"), envir = environment())
-res_AOROC <- rbind.fill(parLapply(cl, seq(1,ncol(full_predicated_path)-1,by = 5), function(x){
+clusterExport(cl = cl, varlist=c("full_predicated_path", "weights_capital_state_country", "eval.df", "cutoff.k", "fm_val","str_split","as.numeric"), envir = environment())
+
+res_AOROC_country <- rbind.fill(parLapply(cl, seq(1,ncol(full_predicated_path)-1,by = 5), function(x){
 library(FSelector)
 library(RWeka)
-wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, x))])
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state_country, x))])
 return(data.frame(AOROC=fm_val(wekares),nfeature=x))
 }))
 stopCluster(cl)
 ```
 
 ```{r}
-library(repr)
-options(repr.plot.width=6, repr.plot.height=3)
-ggplot(data=res_AOROC, aes(x=nfeature, y=AOROC, group=1)) +
+ggplot(data=res_AOROC_country, aes(x=nfeature, y=AOROC, group=1)) +
   geom_line(color="red")+
   geom_point()
 ```
+
 ```{r}
-wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state, 15))])
+full_predicated_path <- res_capital_state_country[["raw"]]
+wekares<-eval.df(full_predicated_path[,c("label", cutoff.k(weights_capital_state_country, 10))])
+features_captial_state_country[c(1:10),]
 wekares[["eval"]]
 ```
-
