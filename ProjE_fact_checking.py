@@ -115,11 +115,13 @@ class ProjE:
             scp.reuse_variables()
             pred_list = inputs
             pred_prob = tf.matmul(tf.matmul(pred_list, self.__pred_embedding), self.__pred_bias)
-            print(type(pred_prob))
+            
             pred_prob *= -1
-            np.exp(pred_prob, pred_prob)
+            pred_prob = tf.exp(pred_prob)
+            #np.exp(pred_prob, pred_prob)
             pred_prob += 1
-            np.reciprocal(pred_prob, pred_prob)
+            #np.reciprocal(pred_prob, pred_prob)
+            pred_prob = tf.reciprocal(pred_prob)
             if (pred_prob>0.5):
                 pred_label = 1
             else:
