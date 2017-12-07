@@ -115,13 +115,13 @@ class ProjE:
             scp.reuse_variables()
             pred_list = inputs
             pred_prob = tf.matmul(tf.matmul(pred_list, self.__pred_embedding), self.__pred_bias)
-            print type(pred_prob)
-            pred_prob *= -1
-            pred_prob = tf.exp(pred_prob)
-            #np.exp(pred_prob, pred_prob)
-            pred_prob += 1
-            #np.reciprocal(pred_prob, pred_prob)
-            pred_prob = tf.reciprocal(pred_prob)
+#            print type(pred_prob)
+#            pred_prob *= -1
+#            pred_prob = tf.exp(pred_prob)
+#            #np.exp(pred_prob, pred_prob)
+#            pred_prob += 1
+#            #np.reciprocal(pred_prob, pred_prob)
+#            pred_prob = tf.reciprocal(pred_prob)
             
 #            if (pred_prob>0.5):
 #                pred_label = 1
@@ -129,7 +129,8 @@ class ProjE:
 #                pred_label = 0
             
             #pred_label = np.argmax(pred_prob, axis=1)
-            return np.vstack([1 - pred_prob, pred_prob]).T
+            #return np.vstack([1 - pred_prob, pred_prob]).T
+            return pred_prob
 
 def train_ops(model, learning_rate=0.1, optimizer_str='gradient', regularizer_weight=1.0):
     with tf.device('/cpu'):
