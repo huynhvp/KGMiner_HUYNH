@@ -210,7 +210,8 @@ def main(_):
             print("Evaluation")
             predict_proba= session.run([test_pred_prob],
                                                        {test_input: test_predicates[:,1:]})
-            print predict_proba
+            print predict_proba[0]
+            predict_proba = predict_proba[0]
             predict_proba *= -1
             np.exp(predict_proba, predict_proba)
             predict_proba += 1
