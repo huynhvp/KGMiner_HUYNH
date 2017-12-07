@@ -203,7 +203,8 @@ def main(_):
                 for i_head in head_unique:
                     l, _ = session.run([train_loss, train_op], 
                                        {pred_input: train_predicates[train_tiples[:,0]==i_head,1:], pred_weight: train_predicates[train_tiples[:,0]==i_head,0]})
-            
+                    accu_loss += l
+                print("Loss ", accu_loss)
             print("Finish training data. Fold ", i_fold)       
             i_fold = i_fold + 1
             
