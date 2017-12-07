@@ -132,7 +132,7 @@ class ProjE:
             #return np.vstack([1 - pred_prob, pred_prob]).T
             return pred_prob
 
-def train_ops(model, learning_rate=0.1, optimizer_str='gradient', regularizer_weight=1.0):
+def train_ops(model, learning_rate, optimizer_str='gradient', regularizer_weight):
     with tf.device('/cpu'):
         pred_input = tf.placeholder(tf.float32, [None, model.n_predicate])
         pred_weight = tf.placeholder(tf.float32, [None])
