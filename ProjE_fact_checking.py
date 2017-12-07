@@ -132,7 +132,7 @@ class ProjE:
             #return np.vstack([1 - pred_prob, pred_prob]).T
             return pred_prob
 
-def train_ops(model, learning_rate, optimizer_str='gradient', regularizer_weight):
+def train_ops(model, learning_rate=0.01, optimizer_str='gradient', regularizer_weight=0.0):
     with tf.device('/cpu'):
         pred_input = tf.placeholder(tf.float32, [None, model.n_predicate])
         pred_weight = tf.placeholder(tf.float32, [None])
@@ -164,12 +164,12 @@ def test_ops(model):
 def main(_):
     parser = argparse.ArgumentParser(description='ProjE.')
     parser.add_argument('--lr', dest='lr', type=float, help="Learning rate", default=0.01)
-    parser.add_argument("--dim", dest='dim', type=int, help="Embedding dimension", default=200)
+    parser.add_argument("--dim", dest='dim', type=int, help="Embedding dimension", default=100)
     parser.add_argument("--max_iter", dest='max_iter', type=int, help="Max iteration", default=100)
     parser.add_argument("--keep", dest='drop_out', type=float, help="Keep prob (1.0 keep all, 0. drop all)",
                         default=0.5)
-    parser.add_argument("--optimizer", dest='optimizer', type=str, help="Optimizer", default='adam')
-    parser.add_argument("--loss_weight", dest='loss_weight', type=float, help="Weight on parameter loss", default=1e-5)
+    parser.add_argument("--optimizer", dest='optimizer', type=str, help="Optimizer", default='gradient')
+    parser.add_argument("--loss_weight", dest='loss_weight', type=float, help="Weight on parameter loss", default=0.0)
 
 
 
