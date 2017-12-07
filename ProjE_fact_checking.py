@@ -128,7 +128,7 @@ class ProjE:
 
 def train_ops(model, learning_rate=0.1, optimizer_str='gradient', regularizer_weight=1.0):
     with tf.device('/cpu'):
-        pred_input = tf.placeholder(tf.int32, [None, model.n_predicate])
+        pred_input = tf.placeholder(tf.float32, [None, model.n_predicate])
         pred_weight = tf.placeholder(tf.float32, [None])
 
         loss = model.train([pred_input, pred_weight],
@@ -150,7 +150,7 @@ def train_ops(model, learning_rate=0.1, optimizer_str='gradient', regularizer_we
     
 def test_ops(model):
     with tf.device('/cpu'):
-        test_input = tf.placeholder(tf.int32, [None, model.n_predicate])
+        test_input = tf.placeholder(tf.float32, [None, model.n_predicate])
         pred_probs, pred_labels = model.test(test_input)
 
     return test_input, pred_probs, pred_labels
