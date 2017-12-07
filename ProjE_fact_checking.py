@@ -41,7 +41,7 @@ class ProjE:
                     f_predpath[i][j] = 1
                 if (f_predpath[i][j] == 'FALSE'):
                     f_predpath[i][j] = 0
-                f_predpath[i][j] = int(f_predpath[i][j])
+                f_predpath[i][j] = float(f_predpath[i][j])
         f_predpath = np.array(f_predpath)
         self.__train_predpath = f_predpath
 
@@ -52,7 +52,7 @@ class ProjE:
         f_triple = [f_triple[i].rstrip('\n').split(',')[:-1] for i in range(len(f_triple))]
         for i in range(len(f_triple)):
             for j in range(len(f_triple[0])):
-                f_triple[i][j] = int(f_triple[i][j])
+                f_triple[i][j] = float(f_triple[i][j])
         f_triple = np.array(f_triple)
         self.__hrt_triples = f_triple
         
