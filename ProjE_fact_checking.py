@@ -66,7 +66,7 @@ class ProjE:
                                                    initializer=tf.random_uniform_initializer(minval=-bound,
                                                                                              maxval=bound,
                                                                                              seed=345))
-            self.__trainable.append(self.__ent_embedding)   
+            self.__trainable.append(self.__pred_embedding)   
             self.__pred_bias = tf.get_variable("pred_bias",
                                                          initializer=tf.zeros([embed_dim,1]))
             self.__trainable.append(self.__pred_bias)
