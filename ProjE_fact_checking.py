@@ -122,12 +122,14 @@ class ProjE:
             pred_prob += 1
             #np.reciprocal(pred_prob, pred_prob)
             pred_prob = tf.reciprocal(pred_prob)
-            if (pred_prob>0.5):
-                pred_label = 1
-            else:
-                pred_label = 0
+            
+#            if (pred_prob>0.5):
+#                pred_label = 1
+#            else:
+#                pred_label = 0
+            
             #pred_label = np.argmax(pred_prob, axis=1)
-            return np.vstack([1 - pred_prob, pred_prob]).T, pred_label
+            return np.vstack([1 - pred_prob, pred_prob]).T
 
 def train_ops(model, learning_rate=0.1, optimizer_str='gradient', regularizer_weight=1.0):
     with tf.device('/cpu'):
@@ -154,9 +156,9 @@ def train_ops(model, learning_rate=0.1, optimizer_str='gradient', regularizer_we
 def test_ops(model):
     with tf.device('/cpu'):
         test_input = tf.placeholder(tf.float32, [None, model.n_predicate])
-        pred_probs, pred_labels = model.test(test_input)
+        pred_probs = model.test(test_input)
 
-    return test_input, pred_probs, pred_labels
+    return test_input, pred_probs
     
 def main(_):
     parser = argparse.ArgumentParser(description='ProjE.')
@@ -177,7 +179,7 @@ def main(_):
     model = ProjE(embed_dim=args.dim)
     
     pred_input, pred_weight, train_loss, train_op = train_ops(model, learning_rate=args.lr, optimizer_str=args.optimizer, regularizer_weight=args.loss_weight)
-    test_pred_input, test_pred_prob, test_pred_label = test_ops(model)
+    test_pred_input, test_pred_prob =  test_ops(model)
     
     with tf.Session() as session:
         tf.initialize_all_variables().run()
@@ -203,10 +205,10 @@ def main(_):
             print("Finish training data.")       
             
             print("Evaluation")
-            predict_proba, predict_label = session.run([test_pred_prob, test_pred_label],
+            predict_proba= session.run([test_pred_prob],
                                                        {test_input: test_predicates[0,1:]})
             print predict_proba
-            print predict_label
+        
         
         
         
