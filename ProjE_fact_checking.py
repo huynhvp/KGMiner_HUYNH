@@ -29,7 +29,7 @@ class ProjE:
         self.__initialized = False
 
         self.__trainable = list()
-        self.__dropout = dropout
+        #self.__dropout = dropout
 
         f_predpath = open('./Predicate_paths/city_capitals_1.csv','r')
         f_predpath = f_predpath.readlines()
