@@ -182,7 +182,7 @@ def main(_):
     test_input, test_pred_prob =  test_ops(model)
     
     with tf.Session() as session:
-        tf.initialize_all_variables().run()
+        tf.global_variables_initializer().run()
         kf = KFold(n_splits=10)
         print("Initializing 10-folds training data...")
         for i_train, i_test in kf.split(model.training_predicate):
@@ -206,7 +206,7 @@ def main(_):
             
             print("Evaluation")
             predict_proba= session.run([test_pred_prob],
-                                                       {test_input: test_predicates[0,1:]})
+                                                       {test_input: test_predicates[0,1:][np.newaxis]})
             print predict_proba
         
         
