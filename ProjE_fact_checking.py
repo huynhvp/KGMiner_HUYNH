@@ -88,7 +88,7 @@ class ProjE:
 
         return (tensor_exp / tensor_sum) * 1  # all ignored elements will have a prob of 0.
     
-    def train(self, inputs, regularizer_weight=1., scope=None):
+    def train(self, inputs, regularizer_weight=0., scope=None):
         with tf.variable_scope(scope or type(self).__name__) as scp:
             if self.__initialized:
                 scp.reuse_variables()
@@ -98,12 +98,12 @@ class ProjE:
 
             pred_res = tf.matmul(tf.matmul(pred_list, self.__pred_embedding), self.__pred_bias)
                                       
-            pred_res_sigmoid = tf.sigmoid(pred_res)
-            #self.pred_softmax = pred_res_softmax = self.sampled_softmax(pred_res, pred_weight)
+            #pred_res_sigmoid = tf.sigmoid(pred_res)
+            self.pred_softmax = pred_res_softmax = self.sampled_softmax(pred_res, pred_weight)
 
             pred_loss = -tf.reduce_sum(
-                tf.log(tf.clip_by_value(pred_res_sigmoid, 1e-10, 1.0)) * pred_weight
-                + tf.log(tf.clip_by_value(1 - pred_res_sigmoid, 1e-10, 1.0)) * (1-pred_weight))
+                tf.log(tf.clip_by_value(pred_res_softmax, 1e-10, 1.0)) * pred_weight)
+           #     + tf.log(tf.clip_by_value(1 - pred_res_sigmoid, 1e-10, 1.0)) * (1-pred_weight))
             
             self.regularizer_loss = regularizer_loss = tf.reduce_sum(
                 tf.abs(self.__pred_embedding)) 
@@ -132,7 +132,7 @@ class ProjE:
             #return np.vstack([1 - pred_prob, pred_prob]).T
             return pred_prob
 
-def train_ops(model, learning_rate=0.01, optimizer_str='gradient', regularizer_weight=0.0):
+def train_ops(model, learning_rate=0.01, optimizer_str='adam', regularizer_weight=0.0):
     with tf.device('/cpu'):
         pred_input = tf.placeholder(tf.float32, [None, model.n_predicate])
         pred_weight = tf.placeholder(tf.float32, [None])
@@ -168,7 +168,7 @@ def main(_):
     parser.add_argument("--max_iter", dest='max_iter', type=int, help="Max iteration", default=100)
     parser.add_argument("--keep", dest='drop_out', type=float, help="Keep prob (1.0 keep all, 0. drop all)",
                         default=0.5)
-    parser.add_argument("--optimizer", dest='optimizer', type=str, help="Optimizer", default='gradient')
+    parser.add_argument("--optimizer", dest='optimizer', type=str, help="Optimizer", default='adam')
     parser.add_argument("--loss_weight", dest='loss_weight', type=float, help="Weight on parameter loss", default=0.0)
 
 
