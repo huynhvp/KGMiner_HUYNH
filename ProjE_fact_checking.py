@@ -124,8 +124,7 @@ class ProjE:
             #pred_label = np.argmax(pred_prob, axis=1)
             return np.vstack([1 - pred_prob, pred_prob]).T, pred_label
 
-
-def train_ops(model: ProjE, learning_rate=0.1, optimizer_str='gradient', regularizer_weight=1.0):
+def train_ops(model, learning_rate=0.1, optimizer_str='gradient', regularizer_weight=1.0):
     with tf.device('/cpu'):
         pred_input = tf.placeholder(tf.int32, [None, model.n_predicate])
         pred_weight = tf.placeholder(tf.float32, [None])
@@ -147,7 +146,7 @@ def train_ops(model: ProjE, learning_rate=0.1, optimizer_str='gradient', regular
 
         return pred_input, pred_weight, loss, op_train
     
-def test_ops(model: ProjE):
+def test_ops(model):
     with tf.device('/cpu'):
         test_input = tf.placeholder(tf.int32, [None, model.n_predicate])
         pred_probs, pred_labels = model.test(test_input)
@@ -204,5 +203,6 @@ def main(_):
         
         
         
-
+if __name__ == '__main__':
+    tf.app.run()
     
