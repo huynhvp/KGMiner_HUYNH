@@ -43,7 +43,7 @@ class ProjE:
                     f_predpath[i][j] = 0
                 f_predpath[i][j] = float(f_predpath[i][j])
         f_predpath = np.array(f_predpath)
-        self.__train_predpath = f_predpath
+        self.__train_predpath = f_predpath-1
 
 
         f_triple = open('./data_id/city_capital.csv','r')
