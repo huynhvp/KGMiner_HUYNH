@@ -179,7 +179,7 @@ def main(_):
     model = ProjE(embed_dim=args.dim)
     
     pred_input, pred_weight, train_loss, train_op = train_ops(model, learning_rate=args.lr, optimizer_str=args.optimizer, regularizer_weight=args.loss_weight)
-    test_pred_input, test_pred_prob =  test_ops(model)
+    test_input, test_pred_prob =  test_ops(model)
     
     with tf.Session() as session:
         tf.initialize_all_variables().run()
