@@ -15,7 +15,7 @@ list.of.packages <- c("bear", "FSelector", "ggplot2")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
 library(FSelector)
-library(ggplot2)
+#library(ggplot2)
 # ---- INPUT and CONFIGURATIONS ----
 
 EDGE_TYPE_FILE = "./data/infobox.edgetypes" # Example : "../data/lobbyist.edgetypes"
@@ -35,8 +35,7 @@ mapfile$V2 <- as.character(mapfile$V2)
 INPUT_FILE = "./data_id/city_capital.csv" # Example : "../facts/lobbyist/firm_payee.csv" col 1 and 2 are ids and 3 is label
 dat_city_capital <- read.csv(INPUT_FILE)
 
-if (ncol(dat_state_capital.true) < 3)
-  dat_state_capital.true$label <- T
+
 
 # ---- Construct false labeled data -----
 set.seed(233)
@@ -50,7 +49,7 @@ clusterExport(cl = cl, varlist=c("adamic_adar", "semantic_proximity", "ppagerank
                                  "as.numeric", "request","DISCARD_REL"), envir = environment())
 
 # Find discriminative paths
-tmp.paths <- rbind.fill(parApply(cl, dat_state_capital, 1, function(x) {
+tmp.paths <- rbind.fill(parApply(cl, dat_city_capital, 1, function(x) {
   tmp_paths <- rel_path(as.numeric(x[1]), as.numeric(x[2]), max_depth = 3, F, DISCARD_REL)
   if(length(tmp_paths) == 0) {
     return(data.frame(label = as.logical(x[3])))
