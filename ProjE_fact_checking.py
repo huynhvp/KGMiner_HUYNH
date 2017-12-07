@@ -2,7 +2,7 @@ import argparse
 import math
 import os.path
 import timeit
-
+from sklearn.model_selection import KFold
 import numpy as np
 import tensorflow as tf
 
@@ -174,32 +174,34 @@ def main(_):
     pred_input, pred_weight, train_loss, train_op = train_ops(model, learning_rate=args.lr, optimizer_str=args.optimizer, regularizer_weight=args.loss_weight)
     test_pred_input, test_pred_prob, test_pred_label = test_ops(model)
     
-
-   print("Initializing 10-folds training data...")
-    for i_train, i_test in kf.split(model.training_predicate):
-        train_predicates = np.array(model.training_predicate)[i_train]
-        test_predicates = np.array(model.training_predicate)[i_test]
-        train_tiples = np.array(model.hrt_tiples)[i_train]    
-        
-        for n_iter in range(args.max_iter):
-            start_time = timeit.default_timer()
-            accu_loss = 0.
-            accu_re_loss = 0.
-            ninst = 0                 
-            print("Minibatches training... iteration: ", n_iter)
+    with tf.Session() as session:
+        tf.initialize_all_variables().run()
+        kf = KFold(n_splits=10)
+        print("Initializing 10-folds training data...")
+        for i_train, i_test in kf.split(model.training_predicate):
+            train_predicates = np.array(model.training_predicate)[i_train]
+            test_predicates = np.array(model.training_predicate)[i_test]
+            train_tiples = np.array(model.hrt_tiples)[i_train]    
             
-            head_unique = np.unique(train_tiples[:,0])
-            for i_head in head_unique:
-                l, _ = session.run([train_loss, train_op], 
-                                   {pred_input: train_predicates[train_tiples[:,0]==i_head,1:], pred_weight: train_predicates[train_tiples[:,0]==i_head,0]})
-       
-        print("Finish training data.")       
-        
-        print("Evaluation")
-        predict_proba, predict_label = session.run([test_pred_prob, test_pred_label],
-                                                   {test_input: test_predicates[0,1:]})
-        print predict_proba
-        print predict_label
+            for n_iter in range(args.max_iter):
+                start_time = timeit.default_timer()
+                accu_loss = 0.
+                accu_re_loss = 0.
+                ninst = 0                 
+                print("Minibatches training... iteration: ", n_iter)
+                
+                head_unique = np.unique(train_tiples[:,0])
+                for i_head in head_unique:
+                    l, _ = session.run([train_loss, train_op], 
+                                       {pred_input: train_predicates[train_tiples[:,0]==i_head,1:], pred_weight: train_predicates[train_tiples[:,0]==i_head,0]})
+           
+            print("Finish training data.")       
+            
+            print("Evaluation")
+            predict_proba, predict_label = session.run([test_pred_prob, test_pred_label],
+                                                       {test_input: test_predicates[0,1:]})
+            print predict_proba
+            print predict_label
         
         
         
