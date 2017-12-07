@@ -186,6 +186,7 @@ def main(_):
         tf.global_variables_initializer().run()
         kf = KFold(n_splits=10)
         print("Initializing 10-folds training data...")
+        i_fold = 1
         for i_train, i_test in kf.split(model.training_predicate):
             train_predicates = np.array(model.training_predicate)[i_train]
             test_predicates = np.array(model.training_predicate)[i_test]
@@ -196,20 +197,36 @@ def main(_):
                 accu_loss = 0.
                 accu_re_loss = 0.
                 ninst = 0                 
-                print("Minibatches training... iteration: ", n_iter)
+                #print("Minibatches training... iteration: ", n_iter)
                 
                 head_unique = np.unique(train_tiples[:,0])
                 for i_head in head_unique:
                     l, _ = session.run([train_loss, train_op], 
                                        {pred_input: train_predicates[train_tiples[:,0]==i_head,1:], pred_weight: train_predicates[train_tiples[:,0]==i_head,0]})
-           
-            print("Finish training data.")       
+            
+            print("Finish training data. Fold ", i_fold)       
+            i_fold = i_fold + 1
             
             print("Evaluation")
             predict_proba= session.run([test_pred_prob],
-                                                       {test_input: test_predicates[0,1:][np.newaxis]})
+                                                       {test_input: test_predicates[:,1:][np.newaxis]})
             print predict_proba
-        
+            predict_proba *= -1
+            np.exp(predict_proba, predict_proba)
+            predict_proba += 1
+            np.reciprocal(predict_proba, predict_proba)
+            predict_label = np.copy(predict_proba);
+            predict_label[predict_label>0.5] = 1
+            predict_label[predict_label<0.5] = 0
+            print predict_label
+            print test_predicates[:,0]
+#            if (pred_prob>0.5):
+#                pred_label = 1
+#            else:
+#                pred_label = 0
+            
+            #pred_label = np.argmax(pred_prob, axis=1)
+            #return np.vstack([1 - pred_prob, pred_prob]).T        
         
         
         
