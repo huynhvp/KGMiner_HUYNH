@@ -36,8 +36,8 @@ n_predicate = train_predpath.shape[1]-1
 print("N_TRAIN_TRIPLES: %d" % train_predpath.shape[0])
 
 # Parameters
-learning_rate = 0.1
-training_epochs = 50
+learning_rate = 0.001
+training_epochs = 100
 batch_size = 100
 display_step = 1
 
@@ -93,7 +93,7 @@ init = tf.global_variables_initializer()
 with tf.Session() as session:
     tf.global_variables_initializer().run()
 
-    kf = KFold(n_splits=10, random_state=233)
+    kf = KFold(n_splits=10, random_state=1233)
     print("Initializing 10-folds training data...")
     i_fold = 1
     for i_train, i_test in kf.split(train_predpath):
@@ -134,7 +134,7 @@ with tf.Session() as session:
         b = tf.cast(tf.argmax(Y,1),tf.float32)
         
         auc = tf.contrib.metrics.streaming_auc(a, b)
-        session.run(tf.initialize_local_variables()) # try commenting this line and you'll get the error
+        session.run(tf.local_variables_initializer()) # try commenting this line and you'll get the error
         train_auc = session.run(auc, feed_dict={X: test_predicates[:,1:], Y: test_labels})
         
         print(train_auc)
