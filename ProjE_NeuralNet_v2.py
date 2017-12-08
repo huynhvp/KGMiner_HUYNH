@@ -93,15 +93,15 @@ init = tf.global_variables_initializer()
 with tf.Session() as session:
     tf.global_variables_initializer().run()
 
-    #kf = KFold(n_splits=10, shuffle = True, random_state=233)
-    kf = KFold(n_splits=10, random_state=233)
+    kf = KFold(n_splits=10, shuffle = True, random_state=233)
+    #kf = KFold(n_splits=10, random_state=233)
     print("Initializing 10-folds training data...")
     i_fold = 1
     for i_train, i_test in kf.split(train_predpath):
         train_predicates = np.array(train_predpath)[i_train]
         test_predicates = np.array(train_predpath)[i_test]
         train_tiples = np.array(hrt_triples)[i_train]    
-        print("Label 1: ",np.sum(test_predicates[:,0])," -- Label 0: ", 1-np.sum(test_predicates[:,0]))
+        print("Label 1: ",np.sum(test_predicates[:,0])," -- Label 0: ", len(test_predicates[:,0])-np.sum(test_predicates[:,0]))
         for epoch in range(training_epochs):
 
             accu_loss = 0.
