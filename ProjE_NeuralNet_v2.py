@@ -36,7 +36,7 @@ n_predicate = train_predpath.shape[1]-1
 print("N_TRAIN_TRIPLES: %d" % train_predpath.shape[0])
 
 # Parameters
-learning_rate = 0.1
+learning_rate = 0.05
 training_epochs = 100
 batch_size = 100
 display_step = 1
@@ -88,7 +88,7 @@ train_op = optimizer.minimize(loss_op)
 # Initializing the variables
 init = tf.global_variables_initializer()
 
-
+tf.local_variables_initializer().run()
 
 with tf.Session() as session:
     tf.global_variables_initializer().run()
