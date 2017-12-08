@@ -137,6 +137,8 @@ with tf.Session() as session:
         print("Accuracy:", accuracy.eval({X: test_predicates[:,1:], Y: test_labels}))
         y_pred = session.run([y_p], feed_dict={X: test_predicates[:,1:]})
         y_true = np.argmax(test_labels,1)
+        print y_pred
+        print y_true
         TP_i = tf.count_nonzero(y_pred * y_true)
         TN_i = tf.count_nonzero((y_pred - 1) * (y_true - 1))
         FP_i = tf.count_nonzero(y_pred * (y_true - 1))
