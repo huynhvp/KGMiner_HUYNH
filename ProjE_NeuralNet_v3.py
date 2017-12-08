@@ -42,7 +42,7 @@ batch_size = 100
 display_step = 1
 
 # Network Parameters
-n_hidden_1 = 150 # 1st layer number of neurons
+n_hidden_1 = 100 # 1st layer number of neurons
 #n_hidden_2 = 1 # 2nd layer number of neurons
 n_input =  n_predicate# MNIST data input (img shape: 28*28)
 n_classes = 2 # MNIST total classes (0-9 digits)
@@ -74,7 +74,7 @@ def multilayer_perceptron(x):
     # Hidden fully connected layer with 256 neurons
     #layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
     # Output fully connected layer with a neuron for each class
-    out_layer = tf.matmul(layer_1, weights['out']) + biases['out']
+    out_layer = tf.matmul(layer_1, weights['out']) 
     return out_layer
 
 # Construct model
@@ -92,7 +92,7 @@ init = tf.global_variables_initializer()
 
 with tf.Session() as session:
     #tf.global_variables_initializer().run()
-    kf = KFold(n_splits=10, shuffle = True, random_state=233)
+    kf = KFold(n_splits=10, random_state=233)
     print("Initializing 10-folds training data...")
     i_fold = 1
     for i_train, i_test in kf.split(train_predpath):
@@ -100,7 +100,7 @@ with tf.Session() as session:
         train_predicates = np.array(train_predpath)[i_train]
         test_predicates = np.array(train_predpath)[i_test]
         train_tiples = np.array(hrt_triples)[i_train]    
-        
+        print("Label 1: ",np.sum(test_predicates[:,0])," -- Label 0: ", len(test_predicates[:,0])-np.sum(test_predicates[:,0]))       
         for epoch in range(training_epochs):
 
             accu_loss = 0.
