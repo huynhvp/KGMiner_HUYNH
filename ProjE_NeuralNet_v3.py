@@ -139,10 +139,10 @@ with tf.Session() as session:
         y_true = np.argmax(test_labels,1)
         print y_pred
         print y_true
-        TP_i = tf.count_nonzero(y_pred * y_true)
-        TN_i = tf.count_nonzero((y_pred - 1) * (y_true - 1))
-        FP_i = tf.count_nonzero(y_pred * (y_true - 1))
-        FN_i = tf.count_nonzero((y_pred - 1) * y_true)
+        TP_i = np.count_nonzero(y_pred * y_true)
+        TN_i = np.count_nonzero((y_pred - 1) * (y_true - 1))
+        FP_i = np.count_nonzero(y_pred * (y_true - 1))
+        FN_i = np.count_nonzero((y_pred - 1) * y_true)
         TP+=TP_i
         TN+=TN_i
         FP+=FP_i
