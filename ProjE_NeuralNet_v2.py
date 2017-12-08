@@ -36,8 +36,8 @@ n_predicate = train_predpath.shape[1]-1
 print("N_TRAIN_TRIPLES: %d" % train_predpath.shape[0])
 
 # Parameters
-learning_rate = 0.001
-training_epochs = 100
+learning_rate = 0.1
+training_epochs = 50
 batch_size = 100
 display_step = 1
 
@@ -93,7 +93,7 @@ init = tf.global_variables_initializer()
 with tf.Session() as session:
     tf.global_variables_initializer().run()
 
-    kf = KFold(n_splits=10, random_state=1233)
+    kf = KFold(n_splits=10, shuffle = True, random_state=233)
     print("Initializing 10-folds training data...")
     i_fold = 1
     for i_train, i_test in kf.split(train_predpath):
