@@ -95,7 +95,12 @@ with tf.Session() as session:
     kf = KFold(n_splits=10, shuffle = True, random_state=233)
     print("Initializing 10-folds training data...")
     i_fold = 1
+    TP = 0
+    TN = 0
+    FP = 0
+    FN = 0
     for i_train, i_test in kf.split(train_predpath):
+        print("Finish training data Fold ", i_fold)  
         tf.global_variables_initializer().run()
         train_predicates = np.array(train_predpath)[i_train]
         test_predicates = np.array(train_predpath)[i_test]
@@ -116,11 +121,12 @@ with tf.Session() as session:
                                {X: X_batch, Y: Y_labels})
                 #accu_loss += l
             #print("Loss ", accu_loss)
-        print("Finish training data Fold ", i_fold)       
+             
         i_fold = i_fold + 1
         
         print("Evaluation")
         pred = tf.nn.softmax(logits)  # Apply softmax to logits
+        y_p = tf.argmax(pred, 1)
         correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(Y, 1))
         # Calculate accuracy
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
@@ -129,14 +135,19 @@ with tf.Session() as session:
         for j in range(len(tmp_)):
             test_labels[j,tmp_[j]] = 1.
         print("Accuracy:", accuracy.eval({X: test_predicates[:,1:], Y: test_labels}))
-        a = tf.cast(tf.argmax(pred, 1),tf.float32)
-        b = tf.cast(tf.argmax(Y,1),tf.float32)
+        y_pred = session.run([y_p], feed_dict={X: test_predicates[:,1:]})
+        y_true = np.argmax(test_labels,1)
+        TP_i = tf.count_nonzero(y_pred * y_true)
+        TN_i = tf.count_nonzero((y_pred - 1) * (y_true - 1))
+        FP_i = tf.count_nonzero(y_pred * (y_true - 1))
+        FN_i = tf.count_nonzero((y_pred - 1) * y_true)
+        TP+=TP_i
+        TN+=TN_i
+        FP+=FP_i
+        FN+= FN_i
+        print("TP: ", TP_i,", FP: ",FP_i,", FN: ",FN_i,", TN: ", TN_i)
+    print("TP: ", TP,", FP: ",FP,", FN: ",FN,", TN: ", TN)
         
-        auc = tf.contrib.metrics.streaming_auc(a, b)
-        session.run(tf.local_variables_initializer()) # try commenting this line and you'll get the error
-        train_auc = session.run(auc, feed_dict={X: test_predicates[:,1:], Y: test_labels})
-        
-        print(train_auc)
 #            if (pred_prob>0.5):
 #                pred_label = 1
 #            else:
