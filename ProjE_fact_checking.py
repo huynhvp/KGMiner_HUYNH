@@ -202,7 +202,7 @@ def main(_):
                 head_unique = np.unique(train_tiples[:,0])
                 for i_head in head_unique:
                     l, _ = session.run([train_loss, train_op], 
-                                       {pred_input: train_predicates[train_tiples[:,0]==i_head,1:], pred_weight: train_predicates[train_tiples[:,0]==i_head,0]})
+                                       {pred_input: train_predicates[train_tiples[:,0]==i_head,1:], pred_weight: train_predicates[train_tiples[:,0]==i_head,0][np.newaxis].T})
                     accu_loss += l
                 print("Loss ", accu_loss)
             print("Finish training data. Fold ", i_fold)       
