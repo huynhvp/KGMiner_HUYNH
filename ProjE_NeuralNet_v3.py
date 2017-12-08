@@ -116,7 +116,7 @@ with tf.Session() as session:
                                {X: X_batch, Y: Y_labels})
                 #accu_loss += l
             #print("Loss ", accu_loss)
-        print("Finish training data. Fold ", i_fold)       
+        print("Finish training data Fold ", i_fold)       
         i_fold = i_fold + 1
         
         print("Evaluation")
