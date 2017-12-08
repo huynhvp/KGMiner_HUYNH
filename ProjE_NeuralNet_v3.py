@@ -42,7 +42,7 @@ batch_size = 100
 display_step = 1
 
 # Network Parameters
-n_hidden_1 = 100 # 1st layer number of neurons
+n_hidden_1 = 150 # 1st layer number of neurons
 #n_hidden_2 = 1 # 2nd layer number of neurons
 n_input =  n_predicate# MNIST data input (img shape: 28*28)
 n_classes = 2 # MNIST total classes (0-9 digits)
@@ -56,9 +56,9 @@ Y = tf.placeholder("float", [None, n_classes])
 
 # Store layers weight & bias
 weights = {
-    'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1])),
+    'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], minval=-bound, maxval=bound, seed=345)),
     #'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2])),
-    'out': tf.Variable(tf.random_normal([n_hidden_1, n_classes]))
+    'out': tf.Variable(tf.random_normal([n_hidden_1, n_classes], minval=-bound, maxval=bound, seed=345))
 }
 biases = {
     'b1': tf.Variable(tf.random_normal([n_hidden_1])),
@@ -74,7 +74,7 @@ def multilayer_perceptron(x):
     # Hidden fully connected layer with 256 neurons
     #layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
     # Output fully connected layer with a neuron for each class
-    out_layer = tf.matmul(layer_1, weights['out']) 
+    out_layer = tf.matmul(layer_1, weights['out']) + biases['out']
     return out_layer
 
 # Construct model
