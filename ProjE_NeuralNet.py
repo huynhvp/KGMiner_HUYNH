@@ -36,14 +36,14 @@ n_predicate = train_predpath.shape[1]-1
 print("N_TRAIN_TRIPLES: %d" % train_predpath.shape[0])
 
 # Parameters
-learning_rate = 0.1
+learning_rate = 0.01
 training_epochs = 100
 batch_size = 100
 display_step = 1
 
 # Network Parameters
 n_hidden_1 = 100 # 1st layer number of neurons
-n_hidden_2 = 1 # 2nd layer number of neurons
+#n_hidden_2 = 1 # 2nd layer number of neurons
 n_input =  n_predicate# MNIST data input (img shape: 28*28)
 n_classes = 2 # MNIST total classes (0-9 digits)
 
@@ -57,12 +57,12 @@ Y = tf.placeholder("float", [None, n_classes])
 # Store layers weight & bias
 weights = {
     'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1])),
-    'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2])),
-    'out': tf.Variable(tf.random_normal([n_hidden_2, n_classes]))
+    #'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2])),
+    'out': tf.Variable(tf.random_normal([n_hidden_1, n_classes]))
 }
 biases = {
     'b1': tf.Variable(tf.random_normal([n_hidden_1])),
-    'b2': tf.Variable(tf.random_normal([n_hidden_2])),
+    #'b2': tf.Variable(tf.random_normal([n_hidden_2])),
     'out': tf.Variable(tf.random_normal([n_classes]))
 }
 
@@ -72,9 +72,9 @@ def multilayer_perceptron(x):
     # Hidden fully connected layer with 256 neurons
     layer_1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
     # Hidden fully connected layer with 256 neurons
-    layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
+    #layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
     # Output fully connected layer with a neuron for each class
-    out_layer = tf.matmul(layer_2, weights['out']) + biases['out']
+    out_layer = tf.matmul(layer_1, weights['out']) + biases['out']
     return out_layer
 
 # Construct model
@@ -91,11 +91,12 @@ init = tf.global_variables_initializer()
 
 
 with tf.Session() as session:
-    tf.global_variables_initializer().run()
-    kf = KFold(n_splits=10, random_state=233)
+    #tf.global_variables_initializer().run()
+    kf = KFold(n_splits=10, shuffle = True, random_state=233)
     print("Initializing 10-folds training data...")
     i_fold = 1
     for i_train, i_test in kf.split(train_predpath):
+        tf.global_variables_initializer().run()
         train_predicates = np.array(train_predpath)[i_train]
         test_predicates = np.array(train_predpath)[i_test]
         train_tiples = np.array(hrt_triples)[i_train]    
