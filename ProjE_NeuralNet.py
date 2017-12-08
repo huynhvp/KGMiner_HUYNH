@@ -109,7 +109,7 @@ with tf.Session() as session:
             for i_head in head_unique:
                 X_batch = train_predicates[train_tiples[:,0]==i_head,1:]
                 tmp = train_predicates[train_tiples[:,0]==i_head,0]
-                Y_labels = np.zero([X_batch.shape[0], n_classes])
+                Y_labels = np.zeros([X_batch.shape[0], n_classes])
                 for j in range(X_batch.shape[0]):
                     Y_labels[j,tmp[j]] = 1.
                 _, c = session.run([train_op, loss_op], feed_dict = 
