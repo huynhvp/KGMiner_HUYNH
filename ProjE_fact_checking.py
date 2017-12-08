@@ -104,7 +104,7 @@ class ProjE:
             #pred_loss = -tf.reduce_sum(
             #    tf.log(tf.clip_by_value(pred_res_softmax, 1e-10, 1.0)) * pred_weight)
            #     + tf.log(tf.clip_by_value(1 - pred_res_sigmoid, 1e-10, 1.0)) * (1-pred_weight))
-            pred_loss = tf.nn.softmax_cross_entropy_with_logits(pred_res, pred_weight)
+            pred_loss = tf.nn.softmax_cross_entropy_with_logits(logits=pred_res, labels=pred_weight)
             self.regularizer_loss = regularizer_loss = tf.reduce_sum(
                 tf.abs(self.__pred_embedding)) 
           
