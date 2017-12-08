@@ -135,7 +135,7 @@ with tf.Session() as session:
         for j in range(len(tmp_)):
             test_labels[j,tmp_[j]] = 1.
         print("Accuracy:", accuracy.eval({X: test_predicates[:,1:], Y: test_labels}))
-        y_pred = session.run([y_p], feed_dict={X: test_predicates[:,1:]})
+        y_pred = session.run([y_p], feed_dict={X: test_predicates[:,1:]})[0]
         y_true = np.argmax(test_labels,1)
         print y_pred
         print y_true
