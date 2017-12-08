@@ -37,7 +37,7 @@ print("N_TRAIN_TRIPLES: %d" % train_predpath.shape[0])
 
 # Parameters
 learning_rate = 0.01
-training_epochs = 300
+training_epochs = 50
 batch_size = 100
 display_step = 1
 
@@ -147,8 +147,8 @@ with tf.Session() as session:
         TN+=TN_i
         FP+=FP_i
         FN+= FN_i
-        print("TP: ", TP_i,", FP: ",FP_i,", FN: ",FN_i,", TN: ", TN_i)
-    print("TP: ", TP,", FP: ",FP,", FN: ",FN,", TN: ", TN)
+        print("TP: ", TP_i,", FN: ",FN_i,", TN: ", TN_i,", FP: ",FP_i)
+    print("TP: ", TP,", FN: ",FN,", TN: ", TN,", FP: ",FP)
         
 #            if (pred_prob>0.5):
 #                pred_label = 1
