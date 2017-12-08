@@ -135,7 +135,7 @@ class ProjE:
 def train_ops(model, learning_rate=0.01, optimizer_str='adam', regularizer_weight=0.0):
     with tf.device('/cpu'):
         pred_input = tf.placeholder(tf.float32, [None, model.n_predicate])
-        pred_weight = tf.placeholder(tf.float32, [None])
+        pred_weight = tf.placeholder(tf.float32, [None,1])
 
         loss = model.train([pred_input, pred_weight],
                            regularizer_weight=regularizer_weight)
