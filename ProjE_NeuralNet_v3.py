@@ -36,8 +36,8 @@ n_predicate = train_predpath.shape[1]-1
 print("N_TRAIN_TRIPLES: %d" % train_predpath.shape[0])
 
 # Parameters
-learning_rate = 0.01
-training_epochs = 100
+learning_rate = 0.1
+training_epochs = 50
 batch_size = 100
 display_step = 1
 
@@ -74,8 +74,7 @@ def multilayer_perceptron(x):
     # Hidden fully connected layer with 256 neurons
     #layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
     # Output fully connected layer with a neuron for each class
-    out_layer = tf.matmul(layer_1, weights['out']) + biases['out']
-
+    out_layer = tf.matmul(layer_1, weights['out']) 
     return out_layer
 
 # Construct model
