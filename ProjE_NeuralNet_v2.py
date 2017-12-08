@@ -123,7 +123,7 @@ with tf.Session() as session:
         correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(Y, 1))
         # Calculate accuracy
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-        roc_score = tf.metrics.auc(Y, pred)
+        roc_score = tf.cast(tf.metrics.auc(Y, pred), "float")
         tmp_ = test_predicates[:,0]
         test_labels = np.zeros([len(tmp_), n_classes])
         for j in range(len(tmp_)):
