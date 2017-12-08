@@ -88,10 +88,11 @@ train_op = optimizer.minimize(loss_op)
 # Initializing the variables
 init = tf.global_variables_initializer()
 
-tf.local_variables_initializer().run()
+
 
 with tf.Session() as session:
     tf.global_variables_initializer().run()
+    tf.local_variables_initializer().run()
     kf = KFold(n_splits=10, random_state=233)
     print("Initializing 10-folds training data...")
     i_fold = 1
