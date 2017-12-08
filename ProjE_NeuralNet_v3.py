@@ -106,14 +106,15 @@ with tf.Session() as session:
             accu_loss = 0.
             ninst = 0                 
             #print("Minibatches training... iteration: ", n_iter)           
-
-            X_batch = train_predicates[:,1:]
-            tmp = train_predicates[:,0]
-            Y_labels = np.zeros([X_batch.shape[0], n_classes])
-            for j in range(X_batch.shape[0]):
-                Y_labels[j,tmp[j]] = 1.
-            _, c = session.run([train_op, loss_op], feed_dict = 
-                               {X: X_batch, Y: Y_labels})
+            head_unique = np.unique(train_tiples[:,0])
+            for i_head in head_unique:
+                X_batch = train_predicates[train_tiples[:,0]==i_head,1:]
+                tmp = train_predicates[train_tiples[:,0]==i_head,0]
+                Y_labels = np.zeros([X_batch.shape[0], n_classes])
+                for j in range(X_batch.shape[0]):
+                    Y_labels[j,tmp[j]] = 1.
+                _, c = session.run([train_op, loss_op], feed_dict = 
+                                   {X: X_batch, Y: Y_labels})
                 #accu_loss += l
             #print("Loss ", accu_loss)
         print("Finish training data Fold ", i_fold)       
