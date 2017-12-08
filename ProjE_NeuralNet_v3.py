@@ -56,9 +56,9 @@ Y = tf.placeholder("float", [None, n_classes])
 
 # Store layers weight & bias
 weights = {
-    'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], minval=-bound, maxval=bound, seed=345)),
+    'h1': tf.Variable(tf.random_uniform([n_input, n_hidden_1], minval=-bound, maxval=bound, seed=345)),
     #'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2])),
-    'out': tf.Variable(tf.random_normal([n_hidden_1, n_classes], minval=-bound, maxval=bound, seed=345))
+    'out': tf.Variable(tf.random_uniform([n_hidden_1, n_classes], minval=-bound, maxval=bound, seed=345))
 }
 biases = {
     'b1': tf.Variable(tf.random_normal([n_hidden_1])),
