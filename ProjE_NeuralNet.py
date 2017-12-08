@@ -88,32 +88,7 @@ train_op = optimizer.minimize(loss_op)
 # Initializing the variables
 init = tf.global_variables_initializer()
 
-with tf.Session() as sess:
-    sess.run(init)
 
-    # Training cycle
-    for epoch in range(training_epochs):
-        avg_cost = 0.
-        total_batch = int(mnist.train.num_examples/batch_size)
-        # Loop over all batches
-        for i in range(total_batch):
-            batch_x, batch_y = mnist.train.next_batch(batch_size)
-            # Run optimization op (backprop) and cost op (to get loss value)
-            _, c = sess.run([train_op, loss_op], feed_dict={X: batch_x,
-                                                            Y: batch_y})
-            # Compute average loss
-            avg_cost += c / total_batch
-        # Display logs per epoch step
-        if epoch % display_step == 0:
-            print("Epoch:", '%04d' % (epoch+1), "cost={:.9f}".format(avg_cost))
-    print("Optimization Finished!")
-
-    # Test model
-    pred = tf.nn.softmax(logits)  # Apply softmax to logits
-    correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(Y, 1))
-    # Calculate accuracy
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-    print("Accuracy:", accuracy.eval({X: mnist.test.images, Y: mnist.test.labels}))
 
 with tf.Session() as session:
     tf.global_variables_initializer().run()
