@@ -36,7 +36,7 @@ n_predicate = train_predpath.shape[1]-1
 print("N_TRAIN_TRIPLES: %d" % train_predpath.shape[0])
 
 # Parameters
-learning_rate = 0.05
+learning_rate = 0.01
 training_epochs = 100
 batch_size = 100
 display_step = 1
@@ -83,7 +83,7 @@ logits = multilayer_perceptron(X)
 # Define loss and optimizer
 loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
     logits=logits, labels=Y))
-optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
 train_op = optimizer.minimize(loss_op)
 # Initializing the variables
 init = tf.global_variables_initializer()
@@ -92,7 +92,7 @@ init = tf.global_variables_initializer()
 
 with tf.Session() as session:
     tf.global_variables_initializer().run()
-    tf.local_variables_initializer().run()
+
     kf = KFold(n_splits=10, random_state=233)
     print("Initializing 10-folds training data...")
     i_fold = 1
@@ -124,13 +124,20 @@ with tf.Session() as session:
         correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(Y, 1))
         # Calculate accuracy
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-        roc_score = tf.cast(tf.metrics.auc(Y, pred), "float")
+        
         tmp_ = test_predicates[:,0]
         test_labels = np.zeros([len(tmp_), n_classes])
         for j in range(len(tmp_)):
             test_labels[j,tmp_[j]] = 1.
         print("Accuracy:", accuracy.eval({X: test_predicates[:,1:], Y: test_labels}))
-        print("AUROC:", roc_score.eval({X: test_predicates[:,1:], Y: test_labels}))
+        a = tf.cast(tf.argmax(pred, 1),tf.float32)
+        b = tf.cast(tf.argmax(Y,1),tf.float32)
+        
+        auc = tf.contrib.metrics.streaming_auc(a, b)
+        session.run(tf.initialize_local_variables()) # try commenting this line and you'll get the error
+        train_auc = session.run(auc, feed_dict={X: test_predicates[:,1:], Y: test_labels})
+        
+        print(train_auc)
 #            if (pred_prob>0.5):
 #                pred_label = 1
 #            else:
