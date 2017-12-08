@@ -52,7 +52,7 @@ bound = 6 / math.sqrt(n_hidden_1)
 
 # tf Graph input
 X = tf.placeholder("float", [None, n_input])
-Y = tf.placeholder("float", [None])
+Y = tf.placeholder("float", [None, n_classes])
 
 # Store layers weight & bias
 weights = {
@@ -107,8 +107,13 @@ with tf.Session() as session:
             #print("Minibatches training... iteration: ", n_iter)           
             head_unique = np.unique(train_tiples[:,0])
             for i_head in head_unique:
+                X_batch = train_predicates[train_tiples[:,0]==i_head,1:]
+                tmp = train_predicates[train_tiples[:,0]==i_head,0]
+                Y_labels = np.zero([X_batch.shape[0], n_classes])
+                for j in range(X_batch.shape[0]):
+                    Y_labels[j,tmp[j]] = 1.
                 _, c = session.run([train_op, loss_op], feed_dict = 
-                                   {X: train_predicates[train_tiples[:,0]==i_head,1:], Y: train_predicates[train_tiples[:,0]==i_head,0]})
+                                   {X: X_batch, Y: Y_labels})
                 #accu_loss += l
             #print("Loss ", accu_loss)
         print("Finish training data. Fold ", i_fold)       
