@@ -124,7 +124,11 @@ with tf.Session() as session:
         correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(Y, 1))
         # Calculate accuracy
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-        print("Accuracy:", accuracy.eval({X: test_predicates[:,1:], Y: test_predicates[:,0]}))
+        tmp_ = test_predicates[:,0]
+        test_labels = np.zeros([len(tmp_), n_classes])
+        for j in range(len(tmp_)):
+            test_labels[j,tmp_[j]] = 1.
+        print("Accuracy:", accuracy.eval({X: test_predicates[:,1:], Y: test_labels}))
 #            if (pred_prob>0.5):
 #                pred_label = 1
 #            else:
