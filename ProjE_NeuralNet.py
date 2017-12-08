@@ -52,7 +52,7 @@ bound = 6 / math.sqrt(n_hidden_1)
 
 # tf Graph input
 X = tf.placeholder("float", [None, n_input])
-Y = tf.placeholder("float", [None, n_classes])
+Y = tf.placeholder("float", [None])
 
 # Store layers weight & bias
 weights = {
