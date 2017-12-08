@@ -36,8 +36,8 @@ n_predicate = train_predpath.shape[1]-1
 print("N_TRAIN_TRIPLES: %d" % train_predpath.shape[0])
 
 # Parameters
-learning_rate = 0.1
-training_epochs = 50
+learning_rate = 0.01
+training_epochs = 100
 batch_size = 100
 display_step = 1
 
@@ -130,6 +130,14 @@ with tf.Session() as session:
         for j in range(len(tmp_)):
             test_labels[j,tmp_[j]] = 1.
         print("Accuracy:", accuracy.eval({X: test_predicates[:,1:], Y: test_labels}))
+        a = tf.cast(tf.argmax(pred, 1),tf.float32)
+        b = tf.cast(tf.argmax(Y,1),tf.float32)
+        
+        auc = tf.contrib.metrics.streaming_auc(a, b)
+        session.run(tf.local_variables_initializer()) # try commenting this line and you'll get the error
+        train_auc = session.run(auc, feed_dict={X: test_predicates[:,1:], Y: test_labels})
+        
+        print(train_auc)
 #            if (pred_prob>0.5):
 #                pred_label = 1
 #            else:
