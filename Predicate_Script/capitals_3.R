@@ -56,6 +56,8 @@ dat_state_capital.false <- rbind.fill(apply(dat_state_capital.true, 1, function(
 colnames(dat_state_capital.true) <- c("src","dst","label")
 dat_state_capital <- rbind(dat_state_capital.true, dat_state_capital.false)
 
+write.csv(tmp.paths, "./data_id/largest_city_capitals.csv")
+
 # ---- Init workers ----
 cl <- makeCluster(CLUSTER_SIZE) 
 clusterExport(cl = cl, varlist=c("adamic_adar", "semantic_proximity", "ppagerank", "heter_path",  "max_depth",
