@@ -56,7 +56,7 @@ dat_state_capital.false <- rbind.fill(apply(dat_state_capital.true, 1, function(
 colnames(dat_state_capital.true) <- c("src","dst","label")
 dat_state_capital <- rbind(dat_state_capital.true, dat_state_capital.false)
 
-write.csv(tmp.paths, "./data_id/largest_city_capitals.csv")
+write.csv(dat_state_capital, "./data_id/largest_city_capitals.csv")
 
 # ---- Init workers ----
 cl <- makeCluster(CLUSTER_SIZE) 
