@@ -1,4 +1,4 @@
-file1_names = open('./data_id/city_capital', 'r')
+file1_names = open('./data_id/city_capital.csv', 'r')
 ids = open('./data_id/city_capitals_labels.tsv', 'w')
 
 
