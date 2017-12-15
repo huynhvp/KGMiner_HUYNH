@@ -18,10 +18,10 @@ while file1_name != "":
         node_info = node.split('\t')
         if node_info[0] == city_id:
             file2_found = True
-            str_to_write = str_to_write + node_info[0]
+            str_to_write = str_to_write + node_info[1].split('\n')[0]
         if node_info[0] == state_id:
             file1_found = True
-            str_to_write = node_info[0] + str_to_write
+            str_to_write = node_info[1].split('\n')[0] + str_to_write
         node = nodes.readline()
     str_to_write += "\t" + ("1" if is_capital=="TRUE" else "-1")
     print "writing " + str_to_write 
