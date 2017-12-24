@@ -1,5 +1,5 @@
-file1_names = open('./data_id/state_capital_data.csv', 'r')
-ids = open('./data_id/capitalOf_2.tsv', 'w')
+file1_names = open('./data_id/bestseller.csv', 'r')
+ids = open('./data_id/NYT_bestseller.tsv', 'w')
 
 
 file1_name = file1_names.readline()
@@ -21,7 +21,7 @@ while file1_name != "":
     str_to_write += "\t" + ("1" if is_capital=="TRUE" else "-1")
     print "writing " + str_to_write 
     ids.write(str_to_write + '\n')
-    file0_name = file1_names.readline()
+    file1_name = file1_names.readline()
     state_id = file1_name.split(',')[0]
     city_id = file1_name.split(',')[1]
     is_capital = file1_name.split(',')[2].split('\n')[0]
